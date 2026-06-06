@@ -1,7 +1,7 @@
 #define MAX_NAME 100
-
+// Como representar uma Pessoa no banco de dados
 typedef struct {
-    long id;               // ID único da pessoa (ex: 1, 2, 99)
-    char name[MAX_NAME];   // Nome da pessoa (completado com '\0')
-    int born;              // Ano de nascimento (0 se não informado)
-} Person;
+    unsigned long id_pessoa;      // O Hash do Nome (Gerado pela função da professora)
+    char nome[100];               // Espaço fixo para o nome
+    int ano_nascimento;
+} TPerson;

@@ -1,9 +1,6 @@
-#define MAX_TITLE 150
-#define MAX_TAGLINE 200
-
+// Como representar um Filme no banco de dados
 typedef struct {
-    long id;                  // ID único do filme
-    char title[MAX_TITLE];    // Título do filme
-    int released;             // Ano de lançamento
-    char tagline[MAX_TAGLINE];// Slogan/Frase de efeito do filme
-} Movie;
+    unsigned long id_filme;       // O Hash do Título
+    char titulo[100];             // Espaço fixo para o título
+    int ano_lancamento;
+} TMovie;

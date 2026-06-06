@@ -1,13 +1,6 @@
-typedef enum {
-    ACTED_IN,   // Atuou no filme
-    DIRECTED,   // Dirigiu o filme
-    PRODUCED,   // Produziu o filme
-    WROTE,      // Escreveu o roteiro do filme
-    UNKNOWN     // Caso apareça outro tipo não mapeado
-} RoleType;
-
+// Como representar um Relacionamento (o que está no outro arquivo)
 typedef struct {
-    long start_id;     // ID da Pessoa (geralmente)
-    long end_id;       // ID do Filme (geralmente)
-    RoleType role;     // O papel exercido
-} Relationship;
+    unsigned long id_pessoa;      // Quem fez
+    unsigned long id_filme;       // Em qual filme
+    char papel[50];               // "ACTED_IN", "DIRECTED", etc.
+} TMoviePerson;
