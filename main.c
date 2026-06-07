@@ -1,29 +1,38 @@
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <ctype.h>
-
-
-// #include "src/Node/Movie/TMovie.h"
-// #include "src/Node/Person/TPerson.h"
-#include "src/services/files/readfile.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 
+#include "src/services/arvorebm/TARVBM_MEMORIASECUNDARIA.h"
+#include "src/services/files/readfile.h"
 
+#define ARQ_INDICE "indice.dat"
 
+int main(void) {
+    setlocale(LC_ALL, "");
 
-
-
-
-int main() {
-    setlocale(LC_ALL, "Portuguese");
-    // Exemplo de chamada dentro do main.c:
-    long raiz_filmes = -1;
-    long raiz_pessoas = -1;
-    long raiz_relacoes = -1;
-    int t = 3; // Valor lido no menu
+    int t           = 3;   // grau mínimo (pode virar menu depois)
     int total_folhas = 0;
+    long raiz        = -1;
 
-    readfile(&raiz_filmes, &raiz_pessoas, &raiz_relacoes, t, &total_folhas);
+    // Abre (ou cria) o arquivo de índice ÚNICO
+    FILE *arq_indice = fopen(ARQ_INDICE, "rb+");
+    if (!arq_indice) arq_indice = fopen(ARQ_INDICE, "wb+");
+    if (!arq_indice) {
+        fprintf(stderr, "[ERRO] Nao foi possivel abrir '%s'\n", ARQ_INDICE);
+        return 1;
+    }
+
+    // Lê os arquivos e popula a árvore
+    readfile(arq_indice, &raiz, t, &total_folhas);
+
+    printf("\n=== Arvore B+ (chaves em ordem) ===\n");
+    TARVBM_imprime_chaves(arq_indice, raiz, t);
+
+    printf("\n=== Arvore B+ (formato visual) ===\n");
+    TARVBM_imprime(arq_indice, raiz, 0, t);
+
+    printf("\nTotal de folhas geradas: %d\n", total_folhas);
+
+    fclose(arq_indice);
     return 0;
 }
