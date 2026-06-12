@@ -1,59 +1,50 @@
+/* ============================================================
+ * main.c – Ponto de entrada do programa
+ *
+ * Responsabilidade: única – inicializar o banco, chamar o
+ * carregamento de dados e entregar o controle ao menu.
+ *
+ * O main NÃO faz parsing, NÃO manipula árvores diretamente
+ * e NÃO imprime resultados de consulta.  Cada uma dessas
+ * responsabilidades pertence ao módulo correspondente.
+ *
+ * Fluxo de execução:
+ *   1. Configura locale para suporte a acentos
+ *   2. Abre o banco de dados (3 árvores B em disco)
+ *   3. Carrega os arquivos Nodes.txt e Relationships.txt
+ *   4. Exibe o menu interativo
+ *   5. Fecha o banco e libera memória
+ * ============================================================ */
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <locale.h>
 
-#include "src/services/arvorebm/TARVBM_MEMORIASECUNDARIA.h"
-#include "src/services/files/readfile.h"
+#include "src/io/db.h"
+#include "src/io/file_reader/file_reader.h"
+#include "src/io/menu/menu.h"
 
-#define ARQ_INDICE "indice.dat"
-
+/* Grau mínimo padrão da árvore B (pode ser alterado no menu) */
+#define T_PADRAO 3
 
 int main(void) {
+    /* Passo 1: configura locale para UTF-8 / acentuação */
     setlocale(LC_ALL, "");
 
-    int t = 3; // grau mínimo — pode virar menu depois
-
-    // -----------------------------------------------------------------------
-    // Abre ou cria o arquivo de índice e recupera o cabeçalho.
-    // Se o arquivo já existe, raiz e total_folhas são restaurados.
-    // Se é novo, raiz = -1 e total_folhas = 0.
-    // -----------------------------------------------------------------------
-    FILE *arq_indice = NULL;
-    TCabecalho cab   = abrir_ou_criar(&arq_indice, ARQ_INDICE, t);
-
-    long raiz        = cab.raiz;
-    int total_folhas = cab.total_folhas;
-
-    // -----------------------------------------------------------------------
-    // Só popula a árvore se ela estiver vazia (primeira execução).
-    // Comente o bloco abaixo se quiser forçar re-inserção.
-    // -----------------------------------------------------------------------
-    
-    if (raiz == -1) {
-        printf("[MAIN] Arvore vazia — lendo arquivos de entrada...\n");
-        readfile(arq_indice, &raiz, t, &total_folhas);
-
-        // Salva a nova raiz e o contador de folhas no cabeçalho
-        cab.raiz         = raiz;
-        cab.total_folhas = total_folhas;
-        gravar_cabecalho(arq_indice, &cab);
-        printf("[MAIN] Cabecalho gravado. Raiz=%ld, Folhas=%d\n", raiz, total_folhas);
-    } else {
-        printf("[MAIN] Arvore carregada do disco. Raiz=%ld, Folhas=%d\n",
-               raiz, total_folhas);
+    /* Passo 2: abre o banco de dados com grau mínimo T_PADRAO */
+    TDB *db = db_abrir(T_PADRAO);
+    if (!db) {
+        fprintf(stderr, "[ERRO FATAL] Nao foi possivel abrir o banco de dados.\n");
+        return 1;
     }
 
-    // -----------------------------------------------------------------------
-    // Impressão
-    // -----------------------------------------------------------------------
-    printf("\n=== Arvore B+ (chaves em ordem) ===\n");
-    TARVBM_imprime_chaves(arq_indice, raiz, t);
+    /* Passo 3: carrega os dados dos arquivos texto */
+    file_reader_carregar_tudo(db);
 
-    printf("\n=== Arvore B+ (formato visual) ===\n");
-    TARVBM_imprime(arq_indice, raiz, 0, t);
+    /* Passo 4: exibe o menu interativo até o usuário sair */
+    menu_principal(db);
 
-    printf("\nTotal de folhas: %d\n", total_folhas);
+    /* Passo 5: fecha o banco e libera recursos */
+    db_fechar(db);
 
-    fclose(arq_indice);
     return 0;
 }
